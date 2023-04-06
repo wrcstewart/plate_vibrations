@@ -1,0 +1,136 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title>Plate Vibrations</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+</head>
+
+<body>
+<canvas id="myCanvas" width="800" height="800"></canvas>
+<br>
+<input type="number" id="idM" onchange="plot()" value="2">
+<input type="number" id="idN" onchange="plot()" value="1">
+<br>
+if the numbers are equal you will see only black
+
+
+<script>
+  let width = 800;//should agree with canvas values
+
+  let c = document.getElementById("myCanvas");
+  let ctx = c.getContext("2d")
+  let mainImageData = new ImageData(width,width);
+function Point(x,y){this.x=x;this.y=y}//sets up a useful type of object
+
+function scaleScreenToModel(inScreenPoint,screenCentrePoint,screenWidth,modelRange){
+ //returns the model coordinates given the screen coordinates.
+  let p = new Point(0,0); // the model point with a dummy initialisation
+  p.x =  (modelRange/screenWidth) *  ((inScreenPoint.x)-(screenCentrePoint.x));
+  p.y =  (modelRange/screenWidth) *  ((inScreenPoint.y)-(screenCentrePoint.y));
+return (p);
+}
+
+// next four lines are for testing the function scaleScreenToModel
+//let testPoint = new Point(100,300);
+//let screenCentrePoint = new Point(200,200);
+//let testModelPoint = scaleScreenToModel(testPoint,screenCentrePoint,400,2);
+//console.log(testModelPoint);//use debug on menu to see console output - should show -0.5 and 0.5
+// end test section
+
+glScreenCentrePoint = new Point(400,400);
+
+modelRange = 2.0;
+modelAmplitude = 1.0;
+
+function  ixImDataArray(i,j,width) {
+  // compute the first index value of i row j column pixel in image data array
+  return ( 4* ( i*width  +  j)  ) ;
+}
+
+function RgbQuad(r,g,b,o){ this.r = r;this.g=g;this.b=b;this.o=o;}
+function rgbValues(modelVal,modelAmplitude,posMaxR,posMaxG,posMaxB,negMaxR,negMaxG,negMaxB ){
+  // using the sign and value of the model value and its Max value  scale the colour to display.
+  // it will return a data structure containing the RGB and alpha value.
+  rgbQuad = new RgbQuad(0,0,0,255);
+  let ratio = modelVal /modelAmplitude;
+  let absRatio = Math.abs(ratio);
+  if( modelVal > 0 ){
+    rgbQuad.r = posMaxR *absRatio;
+    rgbQuad.g = posMaxG *absRatio;
+    rgbQuad.b = posMaxB *absRatio;
+  }else{
+    rgbQuad.r = negMaxR *absRatio;
+    rgbQuad.g = negMaxG *absRatio;
+    rgbQuad.b = negMaxB *absRatio;
+  }
+
+return(rgbQuad)
+}
+
+function calculateModelValue(modelP,modelRange,m,n,modelAmplitude){
+  // this done the main calculation
+  let x = modelP.x; let y= modelP.y;
+  let a = Math.cos (n* Math.PI * x / modelRange);
+  let b = Math.cos (m* Math.PI * y / modelRange);
+  let c = Math.cos (m* Math.PI * x / modelRange);
+  let d = Math.cos (n* Math.PI * y / modelRange);
+  return(  modelAmplitude * (a*b -c*d )  )
+}
+//---------------------------------------------------------------------------------------------------------------
+function plot() {
+  let m = document.getElementById("idM").value;
+  let n = document.getElementById("idN").value;
+
+  for (let i = 0; i < width; i++) {
+    for (let j = 0; j < width; j++) {
+      p = new Point(j, i);
+      let modelP = scaleScreenToModel(p, glScreenCentrePoint, width, modelRange);
+      //let m=100;let n=63;
+      let modelVal = calculateModelValue(modelP, modelRange, m, n, modelAmplitude);
+
+      let posMaxR = 255;
+      let posMaxG = 0;
+      let posMaxB = 0;
+      let negMaxR = 0;
+      let negMaxG = 0;
+      let negMaxB = 255;
+
+      let pointRgbQuad = rgbValues(modelVal, modelAmplitude, posMaxR, posMaxG, posMaxB, negMaxR, negMaxG, negMaxB);
+
+      let baseArrayVal = ixImDataArray(i, j, width);
+
+      mainImageData.data[baseArrayVal] = pointRgbQuad.r;
+      mainImageData.data[baseArrayVal + 1] = pointRgbQuad.g;
+      mainImageData.data[baseArrayVal + 2] = pointRgbQuad.b;
+      mainImageData.data[baseArrayVal + 3] = pointRgbQuad.o;
+      if (i == j + 20) console.log(baseArrayVal);
+      if (i == j + 20) console.log(pointRgbQuad);
+      if (i == j + 20) console.log(mainImageData.data[baseArrayVal]);
+      if (i == j + 20) console.log(modelP);
+      if (i == j + 20) console.log(modelVal);
+
+
+    }
+  }
+  ctx.putImageData(mainImageData, 0, 0);
+
+}
+plot();
+
+
+
+
+
+
+
+
+
+  </script>
+
+</body>
+
+</html>
