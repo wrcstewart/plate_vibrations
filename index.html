@@ -12,7 +12,7 @@
 <body>
 <canvas id="myCanvas" width="400" height="400"></canvas>
 <br>
-<input type="number" id="idM" onchange="plot()" value="2">
+<input type="number" id="idM" onchange="plot()" value="8">
 <input type="number" id="idN" onchange="plot()" value="1">
 <br>
 if the numbers are equal you will see only black
@@ -44,7 +44,7 @@ return (p);
 glScreenCentrePoint = new Point(400,400);
 
 modelRange = 2.0;
-modelAmplitude = 1.0;
+modelAmplitude = 2.0;// max possible value of amplitude.
 
 function  ixImDataArray(i,j,width) {
   // compute the first index value of i row j column pixel in image data array
@@ -78,7 +78,7 @@ function calculateModelValue(modelP,modelRange,m,n,modelAmplitude){
   let b = Math.cos (m* Math.PI * y / modelRange);
   let c = Math.cos (m* Math.PI * x / modelRange);
   let d = Math.cos (n* Math.PI * y / modelRange);
-  return(  modelAmplitude * (a*b -c*d )  )
+  return(  (a*b -c*d )  )
 }
 //---------------------------------------------------------------------------------------------------------------
 function plot() {
@@ -101,17 +101,20 @@ function plot() {
 
       let pointRgbQuad = rgbValues(modelVal, modelAmplitude, posMaxR, posMaxG, posMaxB, negMaxR, negMaxG, negMaxB);
 
+
       let baseArrayVal = ixImDataArray(i, j, width);
+     // if(baseArrayVal < 800) console.log(pointRgbQuad);
+      //if(baseArrayVal < 800) console.log(modelVal);
 
       mainImageData.data[baseArrayVal] = pointRgbQuad.r;
       mainImageData.data[baseArrayVal + 1] = pointRgbQuad.g;
       mainImageData.data[baseArrayVal + 2] = pointRgbQuad.b;
       mainImageData.data[baseArrayVal + 3] = pointRgbQuad.o;
-      if (i == j + 20) console.log(baseArrayVal);
-      if (i == j + 20) console.log(pointRgbQuad);
-      if (i == j + 20) console.log(mainImageData.data[baseArrayVal]);
-      if (i == j + 20) console.log(modelP);
-      if (i == j + 20) console.log(modelVal);
+    //  if (i == j + 20) console.log(baseArrayVal);
+     // if (i == j + 20) console.log(pointRgbQuad);
+     // if (i == j + 20) console.log(mainImageData.data[baseArrayVal]);
+     // if (i == j + 20) console.log(modelP);
+      //if (i == j + 20) console.log(modelVal);
 
 
     }
